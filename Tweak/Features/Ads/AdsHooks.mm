@@ -645,14 +645,14 @@ static void YTKACEInstallBooleanHookOrMethod(NSString *className,
     }
 }
 
-static void YTKACEAdCellLayoutSubviews(UIView *receiver, SEL selector) {
+static void __attribute__((unused)) YTKACEAdCellLayoutSubviews(UIView *receiver, SEL selector) {
     if (OriginalAdCellLayout != NULL) {
         ((void (*)(id, SEL))OriginalAdCellLayout)(receiver, selector);
     }
     YTKACEHandleAdCellLayout(receiver);
 }
 
-static void YTKACEAdCellPrepareForReuse(UIView *receiver, SEL selector) {
+static void __attribute__((unused)) YTKACEAdCellPrepareForReuse(UIView *receiver, SEL selector) {
     YTKACEHandleAdCellReuse(receiver);
     if (OriginalAdCellReuse != NULL) {
         ((void (*)(id, SEL))OriginalAdCellReuse)(receiver, selector);
@@ -693,7 +693,7 @@ static BOOL YTKACEShouldShowPromotedItems(id receiver, SEL selector) {
     return original != NULL && ((BOOL (*)(id, SEL))original)(receiver, selector);
 }
 
-static void YTKACEInstallPromotedCellHooks(void) {
+static void __attribute__((unused)) YTKACEInstallPromotedCellHooks(void) {
     YTKACEPromotedSizeOriginals = [NSMutableDictionary dictionary];
     NSArray<NSString *> *classes = @[@"YTCompactPromotedItemCellController",
                                      @"YTCompactPromotedVideoCellController",
@@ -726,7 +726,7 @@ static BOOL YTKACEIsAdNode(id node) {
     return [objc_getAssociatedObject(node, YTKACEAdNodeAssociation) boolValue];
 }
 
-static void YTKACEVideoNodeSetEntry(id receiver, SEL selector, id entry) {
+static void __attribute__((unused)) YTKACEVideoNodeSetEntry(id receiver, SEL selector, id entry) {
     if (OriginalVideoNodeSetEntry != NULL) {
         ((void (*)(id, SEL, id))OriginalVideoNodeSetEntry)(receiver, selector, entry);
     }
@@ -759,7 +759,7 @@ static void YTKACEVideoNodeSetEntry(id receiver, SEL selector, id entry) {
     });
 }
 
-static BOOL YTKACEVideoNodeShouldShrink(id receiver, SEL selector) {
+static BOOL __attribute__((unused)) YTKACEVideoNodeShouldShrink(id receiver, SEL selector) {
     if (YTKACEIsAdNode(receiver)) {
         return YES;
     }
@@ -767,7 +767,7 @@ static BOOL YTKACEVideoNodeShouldShrink(id receiver, SEL selector) {
         ((BOOL (*)(id, SEL))OriginalVideoNodeShrink)(receiver, selector);
 }
 
-static double YTKACEVideoNodeHeight(id receiver, SEL selector) {
+static double __attribute__((unused)) YTKACEVideoNodeHeight(id receiver, SEL selector) {
     double height = OriginalVideoNodeHeight == NULL
         ? 0.0
         : ((double (*)(id, SEL))OriginalVideoNodeHeight)(receiver, selector);
@@ -775,7 +775,7 @@ static double YTKACEVideoNodeHeight(id receiver, SEL selector) {
     return 0.0;
 }
 
-static CGSize YTKACEVideoNodeSize(id receiver, SEL selector) {
+static CGSize __attribute__((unused)) YTKACEVideoNodeSize(id receiver, SEL selector) {
     CGSize size = OriginalVideoNodeSize == NULL
         ? CGSizeZero
         : ((CGSize (*)(id, SEL))OriginalVideoNodeSize)(receiver, selector);
