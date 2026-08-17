@@ -110,6 +110,12 @@ jobs:
             exit 1
           fi
           unzip -tq youtube.ipa
+          info_plist=$(unzip -Z1 youtube.ipa 'Payload/*.app/Info.plist' | head -n 1)
+          test -n "$info_plist"
+          unzip -p youtube.ipa "$info_plist" > Info.plist
+          youtube_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)
+          echo "YouTube version: $youtube_version"
+          echo "youtube_version=$youtube_version" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install IPA packaging tool
         run: pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip

@@ -15,8 +15,8 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = YouLitePlus
 $(TWEAK_NAME)_FRAMEWORKS = UIKit Foundation SystemConfiguration Security
 $(TWEAK_NAME)_CFLAGS = -fobjc-arc -DTWEAK_VERSION=$(PACKAGE_VERSION)
-# Keep the minimal build surface. YTNativeShare brings an obsolete protobuf
-# tree that is not needed for the requested YouLite+ feature set.
-$(TWEAK_NAME)_FILES = YTLite.x Settings.x Sideloading.x $(wildcard Utils/*.m)
+# Keep the minimal build surface. Native Share, reachability helpers, and
+# the legacy renderer customization code are intentionally not compiled.
+$(TWEAK_NAME)_FILES = YTLite.x Settings.x Sideloading.x Utils/YTLUserDefaults.m
 
 include $(THEOS_MAKE_PATH)/tweak.mk

@@ -3,7 +3,7 @@ Name: YouLite+
 Depends: mobilesubstrate
 Version: 1.0.0
 Architecture: iphoneos-arm
-Description: A lightweight YouTube enhancer focused on ad blocking, background playback, SponsorBlock, PiP and Premium branding.
+Description: A lightweight YouTube enhancer focused on ad blocking, background playback and Premium branding.
 Maintainer: hieucocc
 Author: hieucocc
 Section: Tweaks
