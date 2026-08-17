@@ -1293,6 +1293,17 @@ static void YTKACEAddSections(id receiver, SEL selector, NSArray *sections) {
     }
 }
 
+void YTKACEInstallFeedAdFilterHooks(void) {
+    YTKACEInstallInstanceHook(@"YTInnerTubeCollectionViewController",
+                              @"addSectionsFromArray:",
+                              (IMP)YTKACEAddSections,
+                              &OriginalAddSections);
+    YTKACEInstallInstanceHook(@"YTInnerTubeCollectionViewController",
+                              @"sectionControllersForSectionRenderers:reloadingSectionControllerByRenderer:",
+                              (IMP)YTKACESectionControllers,
+                              &OriginalSectionControllers);
+}
+
 void YTKACEInstallContentVisibilityHooks(void) {
     __unused NSArray<NSNumber *> *actionHooks = @[
         @(YTKACEInstallInstanceHook(@"YTISlimVideoScrollableActionBarRenderer",
@@ -1352,14 +1363,7 @@ void YTKACEInstallContentVisibilityHooks(void) {
                               @"setAccessibilityIdentifier:",
                               (IMP)YTKACEDisplayViewSetIdentifier,
                               &OriginalDisplayViewSetIdentifier);
-    YTKACEInstallInstanceHook(@"YTInnerTubeCollectionViewController",
-                              @"addSectionsFromArray:",
-                              (IMP)YTKACEAddSections,
-                              &OriginalAddSections);
-    YTKACEInstallInstanceHook(@"YTInnerTubeCollectionViewController",
-                              @"sectionControllersForSectionRenderers:reloadingSectionControllerByRenderer:",
-                              (IMP)YTKACESectionControllers,
-                              &OriginalSectionControllers);
+    YTKACEInstallFeedAdFilterHooks();
     YTKACEInstallInstanceHook(@"YTHeaderContentComboView",
                               @"enableSubheaderBarWithView:",
                               (IMP)YTKACEEnableSubheaderBar,

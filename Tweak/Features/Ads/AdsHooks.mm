@@ -541,20 +541,27 @@ static NSArray *YTKACEFilterAdContents(NSArray *contents, id owner) {
     }
     NSUInteger removed = contents.count - filtered.count;
     if (removed == 0) return contents;
-    // UICollectionViewFlowLayout in YouTube 21.32 assumes every rendered
-    // Home section has at least one item. Returning an empty replacement here
-    // crashes the Home feed while it is being scrolled.
-    if (filtered.count == 0) return contents;
+    // The parent section filter removes this section before YouTube calculates
+    // its collection layout. Keep its original array here: an empty array would
+    // make UICollectionViewFlowLayout request item zero and crash while Home
+    // scrolls.
+    if (filtered.count == 0) {
+        objc_setAssociatedObject(owner, YTKACEAdEmptyAssociation, @YES,
+                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        return contents;
+    }
+    objc_setAssociatedObject(owner, YTKACEAdEmptyAssociation, nil,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     return filtered;
 }
 
-static NSArray * __attribute__((unused)) YTKACEElementContentsArray(id receiver, SEL selector) {
+static NSArray *YTKACEElementContentsArray(id receiver, SEL selector) {
     NSArray *contents = OriginalElementContentsArray == NULL ? nil :
         ((id (*)(id, SEL))OriginalElementContentsArray)(receiver, selector);
     return YTKACEFilterAdContents(contents, receiver);
 }
 
-static NSArray * __attribute__((unused)) YTKACEItemSectionContentsArray(id receiver, SEL selector) {
+static NSArray *YTKACEItemSectionContentsArray(id receiver, SEL selector) {
     NSArray *contents = OriginalItemSectionContentsArray == NULL ? nil :
         ((id (*)(id, SEL))OriginalItemSectionContentsArray)(receiver, selector);
     return YTKACEFilterAdContents(contents, receiver);
@@ -785,9 +792,9 @@ static CGSize __attribute__((unused)) YTKACEVideoNodeSize(id receiver, SEL selec
 }
 
 void YTKACEInstallAdsHooks(void) {
-    // Do not collapse, resize, or rewrite Home feed sections. YouTube 21.32's
-    // collection layout caches the original item counts; filtering contentsArray
-    // causes missing videos and, for an all-ad section, a scrolling crash.
+    // Do not collapse or resize feed cells. Feed items are filtered here and
+    // their now-empty parent sections are removed before layout by the focused
+    // feed filter in ContentVisibilityHooks.
     YTKACEInstallInstanceHook(@"YTGlobalConfig",
                               @"shouldBlockUpgradeDialog",
                               (IMP)YTKACEShouldBlockUpgradeDialog,
@@ -899,4 +906,12 @@ void YTKACEInstallAdsHooks(void) {
                               @"hasShoppingCompanionAdRenderer",
                               (IMP)YTKACEHasShoppingCompanionAdRenderer,
                               &OriginalHasShoppingCompanionAdRenderer);
+    YTKACEInstallInstanceHook(@"YTIElementRenderer",
+                              @"contentsArray",
+                              (IMP)YTKACEElementContentsArray,
+                              &OriginalElementContentsArray);
+    YTKACEInstallInstanceHook(@"YTIItemSectionRenderer",
+                              @"contentsArray",
+                              (IMP)YTKACEItemSectionContentsArray,
+                              &OriginalItemSectionContentsArray);
 }

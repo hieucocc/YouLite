@@ -310,23 +310,27 @@ static NSString *YouLitePreferenceKeyForCell(UIView *cell) {
 }
 
 static void YouLiteConfigureNativeToggle(UIView *cell, NSString *key) {
-    if (![cell isKindOfClass:UITableViewCell.class]) return;
-    UITableViewCell *tableCell = (UITableViewCell *)cell;
-    UISwitch *toggle = objc_getAssociatedObject(tableCell, YouLiteNativeToggleKey);
+    UISwitch *toggle = objc_getAssociatedObject(cell, YouLiteNativeToggleKey);
     if (toggle == nil) {
         toggle = [UISwitch new];
         toggle.onTintColor = UIColor.systemRedColor;
         [toggle addTarget:YouLiteNativeToggleTarget.sharedTarget
                    action:@selector(toggleChanged:)
          forControlEvents:UIControlEventValueChanged];
-        objc_setAssociatedObject(tableCell, YouLiteNativeToggleKey, toggle,
+        toggle.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin |
+            UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        [cell addSubview:toggle];
+        objc_setAssociatedObject(cell, YouLiteNativeToggleKey, toggle,
                                  OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        tableCell.accessoryView = toggle;
     }
     objc_setAssociatedObject(toggle, YouLiteNativeToggleKey, key,
                              OBJC_ASSOCIATION_COPY_NONATOMIC);
     toggle.on = YTKACEFeatureEnabled(key);
-    tableCell.selectionStyle = UITableViewCellSelectionStyleNone;
+    CGSize size = toggle.bounds.size;
+    toggle.frame = CGRectMake(CGRectGetWidth(cell.bounds) - size.width - 20.0,
+                              (CGRectGetHeight(cell.bounds) - size.height) / 2.0,
+                              size.width, size.height);
+    [cell bringSubviewToFront:toggle];
 }
 
 static void YTKACESettingsCellLayout(id receiver, SEL selector) {

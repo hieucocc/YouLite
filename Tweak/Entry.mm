@@ -14,6 +14,7 @@ NSString * const YTKACEVersion = @"1.0.1";
 static void YTKACEInstallModules(void) {
     YTKACEInstallSideloadCompatibilityHooks();
     YTKACEInstallAdsHooks();
+    YTKACEInstallFeedAdFilterHooks();
     YTKACEInstallPromoHooks();
     YTKACEInstallSponsorBlockHooks();
     YTKACEInstallPremiumLogoHooks();

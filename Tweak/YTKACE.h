@@ -47,6 +47,7 @@ void YTKACEInstallSettingsEntryHooks(void);
 void YTKACEInstallNativeSettingsHooks(void);
 void YTKACEInstallOverlayVisibilityHooks(void);
 void YTKACEInstallContentVisibilityHooks(void);
+void YTKACEInstallFeedAdFilterHooks(void);
 void YTKACEInstallNavigationVisibilityHooks(void);
 void YTKACEInstallMiscellaneousHooks(void);
 void YTKACEInstallCopyCommentHooks(void);
