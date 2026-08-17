@@ -54,7 +54,10 @@ static NSArray *YTKACEOrderedSettingsGroups(id receiver, SEL selector) {
         [groupClass alloc], initializer, YTKACENativeSettingsGroup);
     if (group == nil) return groups;
     NSMutableArray *updated = [groups mutableCopy] ?: [NSMutableArray array];
-    [updated insertObject:group atIndex:0];
+    // Keep YouTube's own first group selected when Settings opens. The
+    // YouLite+ group remains near the top, but is only opened by the user.
+    NSUInteger index = MIN((NSUInteger)1, updated.count);
+    [updated insertObject:group atIndex:index];
     return updated;
 }
 

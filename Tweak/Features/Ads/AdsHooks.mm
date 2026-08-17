@@ -784,28 +784,9 @@ static CGSize YTKACEVideoNodeSize(id receiver, SEL selector) {
 }
 
 void YTKACEInstallAdsHooks(void) {
-    YTKACEInstallInstanceHook(@"YTVideoWithContextNode", @"setEntry:",
-                              (IMP)YTKACEVideoNodeSetEntry,
-                              &OriginalVideoNodeSetEntry);
-    YTKACEInstallInstanceHook(@"YTVideoWithContextNode", @"yt_height",
-                              (IMP)YTKACEVideoNodeHeight,
-                              &OriginalVideoNodeHeight);
-    YTKACEInstallInstanceHook(@"YTVideoWithContextNode", @"yt_size",
-                              (IMP)YTKACEVideoNodeSize,
-                              &OriginalVideoNodeSize);
-    YTKACEInstallInstanceHook(@"YTVideoWithContextNode",
-                              @"shouldShrinkDismissalView",
-                              (IMP)YTKACEVideoNodeShouldShrink,
-                              &OriginalVideoNodeShrink);
-    YTKACEInstallPromotedCellHooks();
-    YTKACEInstallInstanceHook(@"_ASCollectionViewCell",
-                              @"layoutSubviews",
-                              (IMP)YTKACEAdCellLayoutSubviews,
-                              &OriginalAdCellLayout);
-    YTKACEInstallInstanceHook(@"_ASCollectionViewCell",
-                              @"prepareForReuse",
-                              (IMP)YTKACEAdCellPrepareForReuse,
-                              &OriginalAdCellReuse);
+    // Do not collapse or resize feed cells. YouTube 21.32's Home collection
+    // view can crash while scrolling when a reused cell is forced to height 0.
+    // Feed ads are filtered at the renderer/data level further below instead.
     YTKACEInstallInstanceHook(@"YTGlobalConfig",
                               @"shouldBlockUpgradeDialog",
                               (IMP)YTKACEShouldBlockUpgradeDialog,
