@@ -13,36 +13,13 @@ NSString * const YTKACEVersion = @"1.0.1";
 
 static void YTKACEInstallModules(void) {
     YTKACEInstallSideloadCompatibilityHooks();
-    YTKACEInstallCastCompatibilityHooks();
     YTKACEInstallAdsHooks();
     YTKACEInstallPromoHooks();
     YTKACEInstallSponsorBlockHooks();
-    YTKACEInstallDeArrow();
-    YTKACEInstallOLEDHooks();
-    YTKACEInstallStartupHooks();
     YTKACEInstallPremiumLogoHooks();
     YTKACEInstallBackgroundPlaybackHooks();
-    YTKACEInstallSpeedHooks();
-    YTKACEInstallLoopHooks();
-    YTKACEInstallSleepTimerHooks();
     YTKACEInstallPiPHooks();
-    YTKACEInstallDownloadHooks();
-    YTKACEInstallGlobalDownloadMiniPlayer();
-    YTKACEInstallDoubleTapHooks();
     YTKACEInstallFixPlaybackHooks();
-    YTKACEInstallProgressBarHooks();
-    YTKACEInstallStreamingHooks();
-    YTKACEInstallShortsHooks();
-    YTKACEInstallTabBarHooks();
-    YTKACEInstallNavigationBehaviorHooks();
-    YTKACEInstallPlayerGestureHooks();
-    YTKACEInstallOverlayVisibilityHooks();
-    YTKACEInstallContentVisibilityHooks();
-    YTKACEInstallNavigationVisibilityHooks();
-    YTKACEInstallMiscellaneousHooks();
-    YTKACEInstallCopyCommentHooks();
-    YTKACEInstallProfilePictureHooks();
-    YTKACEInstallNativeShareHooks();
     YTKACEInstallSettingsEntryHooks();
     YTKACEInstallNativeSettingsHooks();
 }
