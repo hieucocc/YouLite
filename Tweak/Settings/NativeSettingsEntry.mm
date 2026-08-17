@@ -297,7 +297,11 @@ static void YTKACEMakeItemInert(id item) {
 
 - (void)toggleChanged:(UISwitch *)toggle {
     NSString *key = objc_getAssociatedObject(toggle, YouLiteNativeToggleKey);
-    if (key.length != 0) YTKACESetPreference(key, toggle.on);
+    if (key.length == 0) return;
+    YTKACESetPreference(key, toggle.on);
+    if ([key isEqualToString:YTKACENoAdsKey]) {
+        YTKACESetPreference(@"YTKACE.Preference.Overlay.ProductsHidden", toggle.on);
+    }
 }
 
 @end

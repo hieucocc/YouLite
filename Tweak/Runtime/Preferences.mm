@@ -67,7 +67,7 @@ void YTKACERegisterDefaults(void) {
         @"YTKACE.Preference.Shorts.LikeHidden": @NO,
         @"YTKACE.Preference.Shorts.SoundHidden": @NO,
         @"YTKACE.Preference.Shorts.DownloadPosition": @0,
-        @"YTKACE.Preference.Overlay.ProductsHidden": @NO,
+        @"YTKACE.Preference.Overlay.ProductsHidden": @YES,
         @"YTKACE.Preference.Feed.CommunityPostsHidden": @NO,
         @"YTKACE.Preference.Feed.MixesHidden": @NO,
         @"YTKACE.Preference.Feed.PlayablesHidden": @NO,
@@ -157,6 +157,13 @@ void YTKACERegisterDefaults(void) {
             [YTKACEDefaults() setBool:YES forKey:key];
         }
         [YTKACEDefaults() setBool:YES forKey:YouLiteEssentialDefaultsKey];
+    }
+    static NSString * const YouLiteProductsBlockMigrationKey =
+        @"YouLite.Preference.EssentialDefaults.2";
+    if (![YTKACEDefaults() boolForKey:YouLiteProductsBlockMigrationKey]) {
+        [YTKACEDefaults() setBool:YES
+                           forKey:@"YTKACE.Preference.Overlay.ProductsHidden"];
+        [YTKACEDefaults() setBool:YES forKey:YouLiteProductsBlockMigrationKey];
     }
     if ([YTKACEDefaults() objectForKey:@"YTKACE.Preference.Shorts.ProductsHidden"] != nil) {
         if ([YTKACEDefaults() boolForKey:@"YTKACE.Preference.Shorts.ProductsHidden"]) {

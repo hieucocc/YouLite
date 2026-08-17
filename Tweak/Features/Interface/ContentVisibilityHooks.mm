@@ -1304,6 +1304,13 @@ void YTKACEInstallFeedAdFilterHooks(void) {
                               &OriginalSectionControllers);
 }
 
+void YTKACEInstallProductsBlockHooks(void) {
+    YTKACEInstallInstanceHook(@"YTMainAppVideoPlayerOverlayViewController",
+                              @"playerOverlayProvider:didInsertPlayerOverlay:",
+                              (IMP)YTKACEDidInsertPlayerOverlay,
+                              &OriginalDidInsertPlayerOverlay);
+}
+
 void YTKACEInstallContentVisibilityHooks(void) {
     __unused NSArray<NSNumber *> *actionHooks = @[
         @(YTKACEInstallInstanceHook(@"YTISlimVideoScrollableActionBarRenderer",
@@ -1448,8 +1455,5 @@ void YTKACEInstallContentVisibilityHooks(void) {
                               @"setPaidContentWithPlayerData:",
                               (IMP)YTKACEInlinePaidContentPlayerData,
                               &OriginalInlinePaidContentPlayerData);
-    YTKACEInstallInstanceHook(@"YTMainAppVideoPlayerOverlayViewController",
-                              @"playerOverlayProvider:didInsertPlayerOverlay:",
-                              (IMP)YTKACEDidInsertPlayerOverlay,
-                              &OriginalDidInsertPlayerOverlay);
+    YTKACEInstallProductsBlockHooks();
 }

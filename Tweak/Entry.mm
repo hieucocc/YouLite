@@ -15,6 +15,7 @@ static void YTKACEInstallModules(void) {
     YTKACEInstallSideloadCompatibilityHooks();
     YTKACEInstallAdsHooks();
     YTKACEInstallFeedAdFilterHooks();
+    YTKACEInstallProductsBlockHooks();
     YTKACEInstallPromoHooks();
     YTKACEInstallSponsorBlockHooks();
     YTKACEInstallPremiumLogoHooks();
