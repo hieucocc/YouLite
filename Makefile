@@ -33,34 +33,13 @@ YTKACE_FILES = \
 	Tweak/Features/Downloads/YTKACEDownloadPlayerController.mm \
 	Tweak/Features/Downloads/YTKACEAudioPlayerController.mm \
 	Tweak/Features/Downloads/GlobalDownloadMiniPlayer.mm \
-	Tweak/Features/Appearance/OLEDHooks.mm \
-	Tweak/Features/Appearance/StartupHooks.mm \
 	Tweak/Features/Appearance/PremiumLogoHooks.mm \
 	Tweak/Features/Playback/BackgroundPlaybackHooks.mm \
 	Tweak/Features/Playback/PiPControls.mm \
-	Tweak/Features/Playback/SpeedControls.mm \
-	Tweak/Features/Playback/LoopControls.mm \
-	Tweak/Features/Playback/SleepTimerControls.mm \
-	Tweak/Features/Playback/DoubleTapHooks.mm \
 	Tweak/Features/Playback/FixPlaybackHooks.mm \
-	Tweak/Features/Playback/ProgressBarStyle.mm \
-	Tweak/Features/Streaming/StreamingHooks.mm \
-	Tweak/Features/Shorts/ShortsHooks.mm \
 	Tweak/Features/Compatibility/SideloadCompatibility.mm \
-	Tweak/Features/Compatibility/CastCompatibility.mm \
-	Tweak/Features/Navigation/TabBarHooks.mm \
-	Tweak/Features/Navigation/NavigationBehaviorHooks.mm \
-	Tweak/Features/Gestures/PlayerGestures.mm \
-	Tweak/Features/Interface/OverlayVisibilityHooks.mm \
 	Tweak/Features/Interface/ContentVisibilityHooks.mm \
-	Tweak/Features/Interface/MiscellaneousHooks.mm \
-	Tweak/Features/Interface/CopyCommentHooks.mm \
-	Tweak/Features/Interface/ProfilePictureViewer.mm \
-	Tweak/Features/Interface/NativeShareHooks.mm \
-	Tweak/Features/Interface/NavigationVisibility.mm \
-	Tweak/Settings/SettingsEntry.mm \
 	Tweak/Settings/NativeSettingsEntry.mm \
-	Tweak/Settings/YouLiteOptionsController.mm \
 	Tweak/Settings/YTKACERootOptionsController.mm \
 	Tweak/Settings/YTKACESettingsPages.mm \
 	Tweak/Settings/YTKACESettingsSearch.mm \

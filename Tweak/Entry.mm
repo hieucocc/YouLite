@@ -1,6 +1,5 @@
 #import "YTKACE.h"
 #import "Features/Downloads/DownloadLog.h"
-#import "Features/SponsorBlock/DeArrow.h"
 #import "Runtime/Preferences.h"
 
 #import <UIKit/UIKit.h>
