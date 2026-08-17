@@ -2,7 +2,7 @@
 #import "../Runtime/Hooking.h"
 #import "../Features/Interface/NavigationVisibility.h"
 #import "../UI/Assets.h"
-#import "YTKACERootOptionsController.h"
+#import "YouLiteOptionsController.h"
 
 #import <objc/runtime.h>
 
@@ -62,10 +62,10 @@ static UIViewController *YTKACETopViewController(UIViewController *controller) {
     UIViewController *presenter = YTKACETopViewController(window.rootViewController);
     if ([presenter.presentedViewController isKindOfClass:UINavigationController.class] &&
         [((UINavigationController *)presenter.presentedViewController).viewControllers.firstObject
-            isKindOfClass:YTKACERootOptionsController.class]) {
+            isKindOfClass:YouLiteOptionsController.class]) {
         return;
     }
-    [presenter presentViewController:YTKACEMakeSettingsNavigationController()
+    [presenter presentViewController:YouLiteMakeSettingsNavigationController()
                             animated:YES
                           completion:nil];
 }
@@ -128,7 +128,7 @@ static void YTKACERightButtonsLayoutSubviews(UIView *receiver, SEL selector) {
     [button setImage:[YTKACEGearImage()
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
              forState:UIControlStateNormal];
-    button.accessibilityLabel = @"YTKACE Settings";
+    button.accessibilityLabel = @"YouLite+ Settings";
     [button addTarget:YTKACESettingsPresenter.sharedPresenter
                action:@selector(openSettings)
      forControlEvents:UIControlEventTouchUpInside];

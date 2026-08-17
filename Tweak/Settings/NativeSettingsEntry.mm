@@ -2,6 +2,7 @@
 #import "YTKACESettingsSearch.h"
 #import "../Runtime/Localization.h"
 #import "YTKACERootOptionsController.h"
+#import "YouLiteOptionsController.h"
 #import "YTKACEDownloadsController.h"
 #import "../Runtime/Hooking.h"
 #import "../UI/Assets.h"
@@ -27,25 +28,7 @@ typedef UIViewController * _Nonnull (^YTKACENativeBuilder)(void);
 
 static NSArray<NSDictionary *> *YTKACENativeLayout(void) {
     return @[
-        @{@"kind": @"search"},
-        @{@"kind": @"row", @"title": @"Downloads & Library"},
-        @{@"kind": @"header", @"title": @"MAIN"},
-        @{@"kind": @"row", @"title": @"Player"},
-        @{@"kind": @"row", @"title": @"SponsorBlock"},
-        @{@"kind": @"row", @"title": @"Tabs"},
-        @{@"kind": @"row", @"title": @"Gestures"},
-        @{@"kind": @"header", @"title": @"VIDEO"},
-        @{@"kind": @"row", @"title": @"Overlay"},
-        @{@"kind": @"row", @"title": @"Playback"},
-        @{@"kind": @"row", @"title": @"Shorts"},
-        @{@"kind": @"row", @"title": @"Wi-Fi Quality"},
-        @{@"kind": @"row", @"title": @"Cellular Quality"},
-        @{@"kind": @"header", @"title": @"APP"},
-        @{@"kind": @"row", @"title": @"Navigation"},
-        @{@"kind": @"row", @"title": @"Other"},
-        @{@"kind": @"header", @"title": @"ABOUT"},
-        @{@"kind": @"row", @"title": @"itzzace", @"developer": @YES},
-        @{@"kind": @"footer"}
+        @{@"kind": @"row", @"title": @"YouLite+"}
     ];
 }
 
@@ -75,7 +58,7 @@ static NSArray *YTKACEOrderedSettingsGroups(id receiver, SEL selector) {
 }
 
 static NSString *YTKACESettingsGroupTitle(id receiver, SEL selector, NSUInteger type) {
-    if (type == YTKACENativeSettingsGroup) return @"YTKACE";
+    if (type == YTKACENativeSettingsGroup) return @"YouLite+";
     return OriginalSettingsGroupTitle == NULL ? nil :
         ((id (*)(id, SEL, NSUInteger))OriginalSettingsGroupTitle)(receiver, selector, type);
 }
@@ -101,7 +84,7 @@ static NSString *YTKACENativeSettingsSubtitle(NSString *title) {
             @"Tabs": @"Choose and reorder bottom tabs",
             @"Gestures": @"Brightness, volume, hold and tap to seek",
             @"Other": @"OLED, startup, sharing, layout and prompts",
-            @"itzzace": @"Developer"
+            @"YouLite+": @"Lightweight YouTube essentials"
         };
     });
     NSString *value = subtitles[title];
@@ -192,6 +175,7 @@ static UIImage *YTKACENativeSettingsIconImage(NSString *title) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         symbols = @{
+            @"YouLite+": @"gearshape.fill",
             @"Player": @"play.rectangle",
             @"Overlay": @"rectangle.on.rectangle",
             @"Playback": @"playpause",
@@ -426,12 +410,7 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
         @"Wi-Fi Quality": [^UIViewController *{ return YTKACEMakeWiFiQualityController(); } copy],
         @"Cellular Quality": [^UIViewController *{ return YTKACEMakeCellularQualityController(); } copy],
         @"Other": [^UIViewController *{ return YTKACEMakeMiscOptionsController(); } copy],
-        @"itzzace": [^UIViewController *{
-            NSURL *URL = [NSURL URLWithString:@"https://github.com/itzzace/ytkace"];
-            [UIApplication.sharedApplication openURL:URL options:@{}
-                                   completionHandler:nil];
-            return nil;
-        } copy]
+        @"YouLite+": [^UIViewController *{ return [YouLiteOptionsController new]; } copy]
     };
 
     NSMutableArray *items = [NSMutableArray array];
@@ -473,10 +452,10 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
             ((void (*)(id, SEL, NSInteger))objc_msgSend)(icon, setIconType, 44);
         }
         ((void (*)(id, SEL, id, NSUInteger, id, id, id, BOOL))objc_msgSend)(
-            settingsController, modern, items, category, @"YTKACE", icon, nil, NO);
+            settingsController, modern, items, category, @"YouLite+", icon, nil, NO);
     } else if ([settingsController respondsToSelector:legacy]) {
         ((void (*)(id, SEL, id, NSUInteger, id, id, BOOL))objc_msgSend)(
-            settingsController, legacy, items, category, @"YTKACE", nil, NO);
+            settingsController, legacy, items, category, @"YouLite+", nil, NO);
     }
 }
 

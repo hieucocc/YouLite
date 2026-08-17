@@ -52,8 +52,10 @@ void YTKACERegisterDefaults(void) {
         YTKACENoAdsKey: @YES,
         YTKACEOLEDKey: @NO,
         YTKACEDownloadKey: @NO,
-        YTKACEBackgroundPlaybackKey: @NO,
-        YTKACEPiPKey: @NO,
+        YTKACESponsorBlockKey: @YES,
+        YTKACEBackgroundPlaybackKey: @YES,
+        YTKACEPiPKey: @YES,
+        @"YTKACE.Preference.Navigation.PremiumLogo": @YES,
         YTKACESpeedKey: @NO,
         YTKACELoopKey: @NO,
         @"YTKACE.Preference.Playback.CustomDoubleTap": @NO,
@@ -142,6 +144,20 @@ void YTKACERegisterDefaults(void) {
         }
     }
     [YTKACEDefaults() setBool:YES forKey:YTKACEMasterEnabledKey];
+    static NSString * const YouLiteEssentialDefaultsKey =
+        @"YouLite.Preference.EssentialDefaults.1";
+    if (![YTKACEDefaults() boolForKey:YouLiteEssentialDefaultsKey]) {
+        for (NSString *key in @[
+            YTKACENoAdsKey,
+            YTKACESponsorBlockKey,
+            YTKACEBackgroundPlaybackKey,
+            YTKACEPiPKey,
+            @"YTKACE.Preference.Navigation.PremiumLogo"
+        ]) {
+            [YTKACEDefaults() setBool:YES forKey:key];
+        }
+        [YTKACEDefaults() setBool:YES forKey:YouLiteEssentialDefaultsKey];
+    }
     if ([YTKACEDefaults() objectForKey:@"YTKACE.Preference.Shorts.ProductsHidden"] != nil) {
         if ([YTKACEDefaults() boolForKey:@"YTKACE.Preference.Shorts.ProductsHidden"]) {
             [YTKACEDefaults() setBool:YES

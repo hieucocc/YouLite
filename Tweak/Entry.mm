@@ -9,7 +9,7 @@
 #define YTKACE_COMBINED_SABR 0
 #endif
 
-NSString * const YTKACEVersion = @"0.8.4";
+NSString * const YTKACEVersion = @"1.0.1";
 
 static void YTKACEInstallModules(void) {
     YTKACEInstallSideloadCompatibilityHooks();
@@ -52,7 +52,6 @@ static void YTKACEEntryPoint(void) {
     @autoreleasepool {
         YTKACEClearDownloadLog();
         YTKACERegisterDefaults();
-        YTKACEScheduleFirstLaunch();
         YTKACEInstallModules();
     }
 }

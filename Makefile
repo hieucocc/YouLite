@@ -48,7 +48,6 @@ YTKACE_FILES = \
 	Tweak/Features/Shorts/ShortsHooks.mm \
 	Tweak/Features/Compatibility/SideloadCompatibility.mm \
 	Tweak/Features/Compatibility/CastCompatibility.mm \
-	Tweak/Features/Onboarding/FirstLaunch.mm \
 	Tweak/Features/Navigation/TabBarHooks.mm \
 	Tweak/Features/Navigation/NavigationBehaviorHooks.mm \
 	Tweak/Features/Gestures/PlayerGestures.mm \
@@ -61,6 +60,7 @@ YTKACE_FILES = \
 	Tweak/Features/Interface/NavigationVisibility.mm \
 	Tweak/Settings/SettingsEntry.mm \
 	Tweak/Settings/NativeSettingsEntry.mm \
+	Tweak/Settings/YouLiteOptionsController.mm \
 	Tweak/Settings/YTKACERootOptionsController.mm \
 	Tweak/Settings/YTKACESettingsPages.mm \
 	Tweak/Settings/YTKACESettingsSearch.mm \
