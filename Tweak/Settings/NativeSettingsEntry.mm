@@ -17,6 +17,7 @@ static NSString *const YTKACEInertIdentifier = @"YTKACEInertItem";
 static const NSInteger YTKACESearchFieldTag = 0x5954534B;
 static const void *YTKACEDeveloperHoldKey = &YTKACEDeveloperHoldKey;
 static const void *YTKACESettingIconImageKey = &YTKACESettingIconImageKey;
+static const void *YouLiteNativePresentationKey = &YouLiteNativePresentationKey;
 static IMP OriginalSettingsCategoryOrder;
 static IMP OriginalUpdateSettingsSection;
 static IMP OriginalOrderedSettingsGroups;
@@ -392,6 +393,27 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
         settingsController = [receiver valueForKey:@"_settingsViewControllerDelegate"];
     } @catch (__unused NSException *exception) {
         return;
+    }
+    if ([settingsController isKindOfClass:UIViewController.class] &&
+        objc_getAssociatedObject(settingsController, YouLiteNativePresentationKey) == nil) {
+        objc_setAssociatedObject(settingsController, YouLiteNativePresentationKey, @YES,
+                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        __weak UIViewController *weakController = settingsController;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 150 * NSEC_PER_MSEC),
+                       dispatch_get_main_queue(), ^{
+            UIViewController *controller = weakController;
+            UINavigationController *navigation = controller.navigationController;
+            if (controller == nil || navigation == nil ||
+                [navigation.topViewController isKindOfClass:YouLiteOptionsController.class]) {
+                return;
+            }
+            [navigation pushViewController:[YouLiteOptionsController new] animated:YES];
+        });
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC),
+                       dispatch_get_main_queue(), ^{
+            objc_setAssociatedObject(settingsController, YouLiteNativePresentationKey, nil,
+                                     OBJC_ASSOCIATION_ASSIGN);
+        });
     }
     NSDictionary<NSString *, YTKACENativeBuilder> *builders = @{
         @"Downloads & Library": [^UIViewController *{

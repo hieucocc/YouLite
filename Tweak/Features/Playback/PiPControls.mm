@@ -258,6 +258,11 @@
         [self showError:@"PiP is not supported on this device."];
         return;
     }
+    // Prefer YouTube's own PiP responder when it is available. It preserves
+    // the active player and any app-specific playback state.
+    if ([self askResponderForPiP]) {
+        return;
+    }
     [self showLoading];
     [self resumeYouTubePlayer];
     [self clearPlayer];
