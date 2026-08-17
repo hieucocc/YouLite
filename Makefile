@@ -42,6 +42,7 @@ YTKACE_FILES = \
 	Tweak/Features/Playback/ProgressBarStyle.mm \
 	Tweak/Features/Compatibility/SideloadCompatibility.mm \
 	Tweak/Features/Navigation/TabBarHooks.mm \
+	Tweak/Features/Navigation/NavigationBehaviorHooks.mm \
 	Tweak/Features/Interface/ContentVisibilityHooks.mm \
 	Tweak/Settings/NativeSettingsEntry.mm \
 	Tweak/Settings/YTKACERootOptionsController.mm \
