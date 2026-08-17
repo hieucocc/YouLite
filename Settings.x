@@ -1,62 +1,62 @@
 #import "YTLite.h"
 
-static const NSInteger YouLitePlusSection = 789;
-static NSString *const YouLitePlusItemIdentifier = @"YouLitePlusSectionItem";
-
-@interface YTSettingsSectionItemManager (YouLitePlus)
-- (void)updateYouLitePlusSectionWithEntry:(id)entry;
+@interface YouLitePlusSettingsController : UITableViewController
 @end
 
-static YTSettingsSectionItem *YouLitePlusSwitch(NSString *title, NSString *key) {
-    return [%c(YTSettingsSectionItem) switchItemWithTitle:title
-        titleDescription:nil
-        accessibilityIdentifier:YouLitePlusItemIdentifier
-        switchOn:ytlBool(key)
-        switchBlock:^BOOL(YTSettingsCell *cell, BOOL enabled) {
-            ytlSetBool(enabled, key);
-            return YES;
-        }
-        settingItemId:0];
+@implementation YouLitePlusSettingsController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"YouLite+";
+    self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
+    self.tableView.accessibilityIdentifier = @"YouLitePlusSettings";
 }
 
-// The old code only added the section when category 1 existed. That is no
-// longer true in newer YouTube versions, so the menu was silently omitted.
-%hook YTAppSettingsPresentationData
-+ (NSArray *)settingsCategoryOrder {
-    NSArray *order = %orig;
-    NSMutableArray *mutableOrder = [order mutableCopy] ?: [NSMutableArray array];
-    NSNumber *section = @(YouLitePlusSection);
-    [mutableOrder removeObject:section];
-    [mutableOrder insertObject:section atIndex:0];
-    return mutableOrder;
-}
-%end
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section { return 3; }
 
-%hook YTSettingsSectionItemManager
-%new(v@:@)
-- (void)updateYouLitePlusSectionWithEntry:(id)entry {
-    YTSettingsViewController *settingsViewController = [self valueForKey:@"_settingsViewControllerDelegate"];
-    if (!settingsViewController) return;
-
-    NSMutableArray<YTSettingsSectionItem *> *items = [NSMutableArray arrayWithArray:@[
-        YouLitePlusSwitch(@"Remove Ads", @"noAds"),
-        YouLitePlusSwitch(@"Background Playback", @"backgroundPlayback"),
-        YouLitePlusSwitch(@"Premium Logo", @"premiumYTLogo"),
-    ]];
-
-    BOOL supportsIcon = [settingsViewController respondsToSelector:@selector(setSectionItems:forCategory:title:icon:titleDescription:headerHidden:)];
-    if (supportsIcon) {
-        [settingsViewController setSectionItems:items forCategory:YouLitePlusSection title:@"YouLite+" icon:nil titleDescription:@"hieucocc · forked from dayanch96" headerHidden:NO];
-    } else {
-        [settingsViewController setSectionItems:items forCategory:YouLitePlusSection title:@"YouLite+" titleDescription:@"hieucocc · forked from dayanch96" headerHidden:NO];
-    }
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+    return @"Author/Maintainer: hieucocc\nForked from: dayanch96";
 }
 
-- (void)updateSectionForCategory:(NSUInteger)category withEntry:(id)entry {
-    if (category == YouLitePlusSection) {
-        [self updateYouLitePlusSectionWithEntry:entry];
-        return;
-    }
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *const cellID = @"YouLitePlusSwitch";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellID];
+    if (!cell) cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellID];
+
+    NSArray<NSString *> *titles = @[ @"Remove Ads", @"Background Playback", @"Premium Logo" ];
+    NSArray<NSString *> *keys = @[ @"noAds", @"backgroundPlayback", @"premiumYTLogo" ];
+    cell.textLabel.text = titles[indexPath.row];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+    UISwitch *toggle = [[UISwitch alloc] init];
+    toggle.tag = indexPath.row;
+    toggle.on = ytlBool(keys[indexPath.row]);
+    [toggle addTarget:self action:@selector(changeSetting:) forControlEvents:UIControlEventValueChanged];
+    cell.accessoryView = toggle;
+    return cell;
+}
+
+- (void)changeSetting:(UISwitch *)toggle {
+    NSArray<NSString *> *keys = @[ @"noAds", @"backgroundPlayback", @"premiumYTLogo" ];
+    ytlSetBool(toggle.on, keys[toggle.tag]);
+}
+
+@end
+
+%hook YTSettingsViewController
+
+%new
+- (void)youLitePlusOpenSettings {
+    YouLitePlusSettingsController *controller = [[YouLitePlusSettingsController alloc] initWithStyle:UITableViewStyleInsetGrouped];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
     %orig;
+    UIBarButtonItem *item = self.navigationItem.rightBarButtonItem;
+    if (![item.title isEqualToString:@"YouLite+"]) {
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"YouLite+" style:UIBarButtonItemStylePlain target:self action:@selector(youLitePlusOpenSettings)];
+    }
 }
+
 %end
