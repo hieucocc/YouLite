@@ -4,6 +4,7 @@
 #import "YTKACERootOptionsController.h"
 #import "YTKACEDownloadsController.h"
 #import "../Runtime/Hooking.h"
+#import "../Runtime/Preferences.h"
 #import "../UI/Assets.h"
 
 #import <UIKit/UIKit.h>
