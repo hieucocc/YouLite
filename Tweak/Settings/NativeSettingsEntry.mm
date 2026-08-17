@@ -2,7 +2,6 @@
 #import "YTKACESettingsSearch.h"
 #import "../Runtime/Localization.h"
 #import "YTKACERootOptionsController.h"
-#import "YouLiteOptionsController.h"
 #import "YTKACEDownloadsController.h"
 #import "../Runtime/Hooking.h"
 #import "../UI/Assets.h"
@@ -17,7 +16,8 @@ static NSString *const YTKACEInertIdentifier = @"YTKACEInertItem";
 static const NSInteger YTKACESearchFieldTag = 0x5954534B;
 static const void *YTKACEDeveloperHoldKey = &YTKACEDeveloperHoldKey;
 static const void *YTKACESettingIconImageKey = &YTKACESettingIconImageKey;
-static const void *YouLiteNativePresentationKey = &YouLiteNativePresentationKey;
+static NSString *const YouLiteNativeTogglePrefix = @"YouLite.Toggle.";
+static const void *YouLiteNativeToggleKey = &YouLiteNativeToggleKey;
 static IMP OriginalSettingsCategoryOrder;
 static IMP OriginalUpdateSettingsSection;
 static IMP OriginalOrderedSettingsGroups;
@@ -29,7 +29,11 @@ typedef UIViewController * _Nonnull (^YTKACENativeBuilder)(void);
 
 static NSArray<NSDictionary *> *YTKACENativeLayout(void) {
     return @[
-        @{@"kind": @"row", @"title": @"YouLite+"}
+        @{@"kind": @"toggle", @"title": @"Block ads", @"key": YTKACENoAdsKey},
+        @{@"kind": @"toggle", @"title": @"SponsorBlock", @"key": YTKACESponsorBlockKey},
+        @{@"kind": @"toggle", @"title": @"Background playback", @"key": YTKACEBackgroundPlaybackKey},
+        @{@"kind": @"toggle", @"title": @"Picture in Picture", @"key": YTKACEPiPKey},
+        @{@"kind": @"toggle", @"title": @"Premium logo", @"key": @"YTKACE.Preference.Navigation.PremiumLogo"}
     ];
 }
 
@@ -276,6 +280,54 @@ static void YTKACEMakeItemInert(id item) {
 
 @end
 
+@interface YouLiteNativeToggleTarget : NSObject
++ (instancetype)sharedTarget;
+- (void)toggleChanged:(UISwitch *)toggle;
+@end
+
+@implementation YouLiteNativeToggleTarget
+
++ (instancetype)sharedTarget {
+    static YouLiteNativeToggleTarget *target;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{ target = [YouLiteNativeToggleTarget new]; });
+    return target;
+}
+
+- (void)toggleChanged:(UISwitch *)toggle {
+    NSString *key = objc_getAssociatedObject(toggle, YouLiteNativeToggleKey);
+    if (key.length != 0) YTKACESetPreference(key, toggle.on);
+}
+
+@end
+
+static NSString *YouLitePreferenceKeyForCell(UIView *cell) {
+    NSString *identifier = cell.accessibilityIdentifier;
+    if (![identifier hasPrefix:YouLiteNativeTogglePrefix]) return nil;
+    NSString *key = [identifier substringFromIndex:YouLiteNativeTogglePrefix.length];
+    return key.length == 0 ? nil : key;
+}
+
+static void YouLiteConfigureNativeToggle(UIView *cell, NSString *key) {
+    if (![cell isKindOfClass:UITableViewCell.class]) return;
+    UITableViewCell *tableCell = (UITableViewCell *)cell;
+    UISwitch *toggle = objc_getAssociatedObject(tableCell, YouLiteNativeToggleKey);
+    if (toggle == nil) {
+        toggle = [UISwitch new];
+        toggle.onTintColor = UIColor.systemRedColor;
+        [toggle addTarget:YouLiteNativeToggleTarget.sharedTarget
+                   action:@selector(toggleChanged:)
+         forControlEvents:UIControlEventValueChanged];
+        objc_setAssociatedObject(tableCell, YouLiteNativeToggleKey, toggle,
+                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        tableCell.accessoryView = toggle;
+    }
+    objc_setAssociatedObject(toggle, YouLiteNativeToggleKey, key,
+                             OBJC_ASSOCIATION_COPY_NONATOMIC);
+    toggle.on = YTKACEFeatureEnabled(key);
+    tableCell.selectionStyle = UITableViewCellSelectionStyleNone;
+}
+
 static void YTKACESettingsCellLayout(id receiver, SEL selector) {
     if (OriginalSettingsCellLayout != NULL) {
         ((void (*)(id, SEL))OriginalSettingsCellLayout)(receiver, selector);
@@ -283,6 +335,12 @@ static void YTKACESettingsCellLayout(id receiver, SEL selector) {
     if (![receiver isKindOfClass:UIView.class]) return;
     UIView *cell = receiver;
     NSString *identifier = cell.accessibilityIdentifier;
+    NSString *toggleKey = YouLitePreferenceKeyForCell(cell);
+    if (toggleKey != nil) {
+        YouLiteConfigureNativeToggle(cell, toggleKey);
+        cell.userInteractionEnabled = YES;
+        return;
+    }
     UIView *host = cell;
     if ([cell respondsToSelector:@selector(contentView)]) {
         UIView *content = ((UIView *(*)(id, SEL))objc_msgSend)(
@@ -381,6 +439,16 @@ static id YTKACENativeSettingsItem(NSString *title,
     return item;
 }
 
+static id YouLiteNativeToggleItem(NSString *title, NSString *key) {
+    Class itemClass = NSClassFromString(@"YTSettingsSectionItem");
+    SEL plain = NSSelectorFromString(
+        @"itemWithTitle:accessibilityIdentifier:detailTextBlock:selectBlock:");
+    if (itemClass == Nil || ![itemClass respondsToSelector:plain]) return nil;
+    NSString *identifier = [YouLiteNativeTogglePrefix stringByAppendingString:key];
+    return ((id (*)(id, SEL, id, id, id, id))objc_msgSend)(
+        itemClass, plain, YTKACELocalized(title), identifier, nil, nil);
+}
+
 static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
                                               NSUInteger category, id entry) {
     if (category != YTKACENativeSettingsCategory) {
@@ -396,27 +464,6 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
         settingsController = [receiver valueForKey:@"_settingsViewControllerDelegate"];
     } @catch (__unused NSException *exception) {
         return;
-    }
-    if ([settingsController isKindOfClass:UIViewController.class] &&
-        objc_getAssociatedObject(settingsController, YouLiteNativePresentationKey) == nil) {
-        objc_setAssociatedObject(settingsController, YouLiteNativePresentationKey, @YES,
-                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        __weak UIViewController *weakController = settingsController;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 150 * NSEC_PER_MSEC),
-                       dispatch_get_main_queue(), ^{
-            UIViewController *controller = weakController;
-            UINavigationController *navigation = controller.navigationController;
-            if (controller == nil || navigation == nil ||
-                [navigation.topViewController isKindOfClass:YouLiteOptionsController.class]) {
-                return;
-            }
-            [navigation pushViewController:[YouLiteOptionsController new] animated:YES];
-        });
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC),
-                       dispatch_get_main_queue(), ^{
-            objc_setAssociatedObject(settingsController, YouLiteNativePresentationKey, nil,
-                                     OBJC_ASSOCIATION_ASSIGN);
-        });
     }
     NSDictionary<NSString *, YTKACENativeBuilder> *builders = @{
         @"Downloads & Library": [^UIViewController *{
@@ -434,8 +481,7 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
         @"Gestures": [^UIViewController *{ return YTKACEMakeGestureOptionsController(); } copy],
         @"Wi-Fi Quality": [^UIViewController *{ return YTKACEMakeWiFiQualityController(); } copy],
         @"Cellular Quality": [^UIViewController *{ return YTKACEMakeCellularQualityController(); } copy],
-        @"Other": [^UIViewController *{ return YTKACEMakeMiscOptionsController(); } copy],
-        @"YouLite+": [^UIViewController *{ return [YouLiteOptionsController new]; } copy]
+        @"Other": [^UIViewController *{ return YTKACEMakeMiscOptionsController(); } copy]
     };
 
     NSMutableArray *items = [NSMutableArray array];
@@ -443,7 +489,9 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
         NSString *kind = definition[@"kind"];
         NSString *title = definition[@"title"];
         id item = nil;
-        if ([kind isEqualToString:@"search"]) {
+        if ([kind isEqualToString:@"toggle"]) {
+            item = YouLiteNativeToggleItem(title, definition[@"key"]);
+        } else if ([kind isEqualToString:@"search"]) {
             item = YTKACENativeSearchRow(settingsController);
         } else if ([kind isEqualToString:@"header"]) {
             item = YTKACENativePlainItem(nil, YTKACELocalized(title));

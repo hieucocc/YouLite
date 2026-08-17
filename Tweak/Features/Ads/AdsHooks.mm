@@ -548,13 +548,13 @@ static NSArray *YTKACEFilterAdContents(NSArray *contents, id owner) {
     return filtered;
 }
 
-static NSArray *YTKACEElementContentsArray(id receiver, SEL selector) {
+static NSArray * __attribute__((unused)) YTKACEElementContentsArray(id receiver, SEL selector) {
     NSArray *contents = OriginalElementContentsArray == NULL ? nil :
         ((id (*)(id, SEL))OriginalElementContentsArray)(receiver, selector);
     return YTKACEFilterAdContents(contents, receiver);
 }
 
-static NSArray *YTKACEItemSectionContentsArray(id receiver, SEL selector) {
+static NSArray * __attribute__((unused)) YTKACEItemSectionContentsArray(id receiver, SEL selector) {
     NSArray *contents = OriginalItemSectionContentsArray == NULL ? nil :
         ((id (*)(id, SEL))OriginalItemSectionContentsArray)(receiver, selector);
     return YTKACEFilterAdContents(contents, receiver);
@@ -785,9 +785,9 @@ static CGSize __attribute__((unused)) YTKACEVideoNodeSize(id receiver, SEL selec
 }
 
 void YTKACEInstallAdsHooks(void) {
-    // Do not collapse or resize feed cells. YouTube 21.32's Home collection
-    // view can crash while scrolling when a reused cell is forced to height 0.
-    // Feed ads are filtered at the renderer/data level further below instead.
+    // Do not collapse, resize, or rewrite Home feed sections. YouTube 21.32's
+    // collection layout caches the original item counts; filtering contentsArray
+    // causes missing videos and, for an all-ad section, a scrolling crash.
     YTKACEInstallInstanceHook(@"YTGlobalConfig",
                               @"shouldBlockUpgradeDialog",
                               (IMP)YTKACEShouldBlockUpgradeDialog,
@@ -899,12 +899,4 @@ void YTKACEInstallAdsHooks(void) {
                               @"hasShoppingCompanionAdRenderer",
                               (IMP)YTKACEHasShoppingCompanionAdRenderer,
                               &OriginalHasShoppingCompanionAdRenderer);
-    YTKACEInstallInstanceHook(@"YTIElementRenderer",
-                              @"contentsArray",
-                              (IMP)YTKACEElementContentsArray,
-                              &OriginalElementContentsArray);
-    YTKACEInstallInstanceHook(@"YTIItemSectionRenderer",
-                              @"contentsArray",
-                              (IMP)YTKACEItemSectionContentsArray,
-                              &OriginalItemSectionContentsArray);
 }

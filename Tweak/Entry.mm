@@ -20,7 +20,6 @@ static void YTKACEInstallModules(void) {
     YTKACEInstallBackgroundPlaybackHooks();
     YTKACEInstallPiPHooks();
     YTKACEInstallFixPlaybackHooks();
-    YTKACEInstallSettingsEntryHooks();
     YTKACEInstallNativeSettingsHooks();
 }
 
