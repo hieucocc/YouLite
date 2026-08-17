@@ -3,37 +3,28 @@
 ```text
 Tweak: YouLite+
 Author/Maintainer: hieucocc
-Forked from: dayanch96
-Base: last free YTLite source (v5.2b4)
+Based on: YTKACE by itzzace
 ```
 
-YouLite+ is a deliberately small YouTube enhancement tweak. The current
-runtime feature set is:
+YouLite+ is a lightweight YouTube enhancement fork based on the open-source
+YTKACE project. Its intended feature set is deliberately limited to:
 
-- ad and Premium-prompt blocking
+- ad blocking and Premium-prompt blocking
+- SponsorBlock
 - background playback
+- Picture in Picture
 - optional Premium logo
-- a compact YouLite+ section at the top of YouTube Settings
 
-The original YTLite source included many renderer/UI hooks. They were removed
-because they are unsafe on modern YouTube versions and can cause an empty Home
-feed. PiP and iSponsorBlock are not claimed as features until their own source
-has been integrated and device-tested.
+The first migration build keeps the upstream YTKACE runtime intact to verify
+compatibility with YouTube 21.32.4. Features outside the list above will then
+be removed from the build and settings UI in small, tested steps.
 
-## Build an IPA
+## Build
 
-Open **Actions → Build YouLite+ IPA → Run workflow**, then provide a direct
-link to a decrypted YouTube IPA. The workflow records the YouTube version,
-builds the tweak, injects it, and uploads the IPA as an artifact and draft
-release.
+Use **Actions → IPA**, provide a direct URL to a decrypted YouTube IPA you are
+entitled to use, then download the resulting artifact.
 
-## Compatibility
+## Credits and licenses
 
-The upstream free source documented YouTube 20.32.4 as its last confirmed
-version. Each new YouTube version must be tested on-device; a successful build
-only proves packaging, not runtime compatibility.
-
-## Credits and license
-
-This project retains the upstream license and attribution chain. See the Git
-history and source comments for individual upstream projects.
+YTKACE is licensed under MIT by its contributors, including itzzace. This fork
+retains its upstream license and third-party notices.

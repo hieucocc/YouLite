@@ -1,11 +1,11 @@
 Package: com.hieucocc.youlite
 Name: YouLite+
-Depends: mobilesubstrate
 Version: 1.0.0
-Architecture: iphoneos-arm
-Description: A lightweight YouTube enhancer focused on ad blocking, background playback and Premium branding.
+Architecture: iphoneos-arm64
+Description: Lightweight YouTube enhancement with ad blocking, SponsorBlock, background playback, PiP and Premium logo.
 Maintainer: hieucocc
 Author: hieucocc
 Section: Tweaks
-Icon: https://raw.githubusercontent.com/hieucocc/YouLite/main/Resources/icon.png
-SileoDepiction: https://raw.githubusercontent.com/hieucocc/YouLite/main/Resources/depiction.json
+Depends: mobilesubstrate | ellekit, firmware (>= 16.0)
+Homepage: https://github.com/hieucocc/YouLite
+Tag: role::enduser
