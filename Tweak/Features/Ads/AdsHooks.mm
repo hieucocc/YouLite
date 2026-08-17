@@ -525,6 +525,7 @@ static id YTKACEElementRenderer(id object) {
 }
 
 static NSArray *YTKACEFilterAdContents(NSArray *contents, id owner) {
+    (void)owner;
     if (!YTKACEFeatureEnabled(YTKACENoAdsKey) ||
         ![contents isKindOfClass:NSArray.class] || contents.count == 0) {
         return contents;
@@ -540,10 +541,10 @@ static NSArray *YTKACEFilterAdContents(NSArray *contents, id owner) {
     }
     NSUInteger removed = contents.count - filtered.count;
     if (removed == 0) return contents;
-    if (filtered.count == 0 && owner != nil) {
-        objc_setAssociatedObject(owner, YTKACEAdEmptyAssociation, @YES,
-                                 OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    }
+    // UICollectionViewFlowLayout in YouTube 21.32 assumes every rendered
+    // Home section has at least one item. Returning an empty replacement here
+    // crashes the Home feed while it is being scrolled.
+    if (filtered.count == 0) return contents;
     return filtered;
 }
 
