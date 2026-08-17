@@ -1,11 +1,11 @@
-Package: com.dvntm.ytlite
-Name: YTLite
+Package: com.hieucocc.youlite
+Name: YouLite+
 Depends: mobilesubstrate
-Version: 0.0.1
+Version: 1.0.0
 Architecture: iphoneos-arm
-Description: Lightweight YouTube Enhancer
-Maintainer: dvntm
-Author: dvntm
+Description: A lightweight YouTube enhancer focused on ad blocking, background playback, SponsorBlock, PiP and Premium branding.
+Maintainer: hieucocc
+Author: hieucocc
 Section: Tweaks
-Icon: https://raw.githubusercontent.com/dayanch96/icons/main/ytlite.png
-SileoDepiction: https://raw.githubusercontent.com/dayanch96/icons/main/ytlite.json
+Icon: https://raw.githubusercontent.com/hieucocc/YouLite/main/Resources/icon.png
+SileoDepiction: https://raw.githubusercontent.com/hieucocc/YouLite/main/Resources/depiction.json

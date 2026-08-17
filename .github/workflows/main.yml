@@ -1,320 +1,135 @@
-name: Create YouTube Plus app
+name: Build YouLite+ IPA
 
 on:
   workflow_dispatch:
     inputs:
-
-      enable_youpip:
-        description: "Integrate YouPiP"
-        type: boolean
-        required: true
-        default: false
-
-      enable_ytuhd:
-        description: "Integrate YTUHD"
-        type: boolean
-        required: true
-        default: false
-
-      enable_yq:
-        description: "Integrate YouQuality"
-        type: boolean
-        required: true
-        default: false
-
-      enable_ryd:
-        description: "Integrate Return YouTube Dislikes"
-        type: boolean
-        required: true
-        default: false
-
-      enable_demc:
-        description: "Integrate DontEatMyContent"
-        type: boolean
-        required: true
-        default: false
-
       ipa_url:
-        description: "URL to the decrypted IPA file"
-        default: ""
+        description: "URL to the decrypted YouTube IPA file"
         required: true
         type: string
-
-      tweak_version:
-        description: "The version of the tweak to use. Enter the version manually from dayanch96/YTLite/releases or leave default"
-        default: "5.2b3"
+      app_name:
+        description: "App Name"
         required: true
-        type: string
-
-      display_name:
-        description: "App Name (Optional)"
         default: "YouTube"
-        required: true
         type: string
-
       bundle_id:
-        description: "BundleID (Optional)"
-        default: "com.google.ios.youtube"
+        description: "Bundle ID"
         required: true
+        default: "com.google.ios.youtube"
         type: string
-
-      info_note:
-        description: "TIP: Learn more about integrations in the README via the link below"
-        default: "https://github.com/dayanch96/YTLite#tweak-integration-details"
-        type: string
-        required: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
-  build:
-    name: 
+  build-tweak:
+    name: Build YouLite+ tweak
     runs-on: macos-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout Main
-        uses: actions/checkout@v4.1.1
-        with:
-          path: main
-          submodules: recursive
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - name: Hide sensitive inputs
-        uses: levibostian/action-hide-sensitive-inputs@v1
-        with:
-          exclude_inputs: bundle_id,display_name,enable_demc,enable_ryd,enable_youpip,enable_yq,enable_ytuhd,info_note,tweak_version
+      - name: Install build dependencies
+        run: brew install make ldid dpkg
 
-      - name: Download and validate IPA
-        run: |
-          wget "${{ inputs.ipa_url }}" --no-verbose -O ${{ github.workspace }}/youtube.ipa
-
-          file_type=$(file --mime-type -b ${{ github.workspace }}/youtube.ipa)
-
-          if [[ "$file_type" != "application/x-ios-app" && "$file_type" != "application/zip" ]]; then
-            echo "::error::Validation failed: The downloaded file is not a valid IPA. Detected type: $file_type."
-            exit 1
-          fi
-
-      - name: Install Dependencies
-        run: brew install make ldid
-
-      - name: Set PATH environment variable
-        run: echo "$(brew --prefix make)/libexec/gnubin" >> $GITHUB_PATH
+      - name: Configure GNU make
+        run: echo "$(brew --prefix make)/libexec/gnubin" >> "$GITHUB_PATH"
 
       - name: Cache Theos
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_demc }}
-        id: theos
+        id: theos-cache
         uses: actions/cache@v4
-        env:
-          cache-name: theos_cache_67db2ab
         with:
-          path: theos/
-          key: ${{ env.cache-name }}
-          restore-keys: ${{ env.cache-name }}
+          path: theos
+          key: theos-9bc73406cf80b711ef4d02c15ff1dedc4478a275
 
-      - name: Setup Theos
-        if: ${{ (inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_demc) && steps.theos.outputs.cache-hit != 'true' }}
-        uses: actions/checkout@v4.1.7
+      - name: Set up Theos
+        if: steps.theos-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
         with:
           repository: theos/theos
-          ref: 67db2ab8d950910161730de77c322658ea3e6b44
-          path: ${{ github.workspace }}/theos
+          ref: 9bc73406cf80b711ef4d02c15ff1dedc4478a275
+          path: theos
           submodules: recursive
 
       - name: Download iOS SDK
-        if: ${{ (inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_demc) && steps.theos.outputs.cache-hit != 'true' }}
+        if: steps.theos-cache.outputs.cache-hit != 'true'
         run: |
-          git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/theos/sdks/
+          git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/theos/sdks.git sdks
           cd sdks
           git sparse-checkout set --no-cone iPhoneOS16.5.sdk
           git checkout
-          mv *.sdk $THEOS/sdks
+          mv *.sdk ../theos/sdks/
+
+      - name: Build package
+        run: |
+          make clean package DEBUG=0 FINALPACKAGE=1
+          deb=$(find packages -maxdepth 1 -type f -name '*.deb' | head -n 1)
+          test -n "$deb"
+          cp "$deb" "$GITHUB_WORKSPACE/YouLitePlus.deb"
+          dpkg-deb --info "$GITHUB_WORKSPACE/YouLitePlus.deb"
         env:
           THEOS: ${{ github.workspace }}/theos
 
-      - name: Install cyan
+      - name: Upload tweak artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: youlite-tweak
+          path: YouLitePlus.deb
+          if-no-files-found: error
+          retention-days: 1
+
+  package-ipa:
+    name: Package YouLite+ IPA
+    runs-on: macos-latest
+    needs: build-tweak
+    steps:
+      - name: Download tweak artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: youlite-tweak
+          path: .
+
+      - name: Download and validate decrypted IPA
+        env:
+          IPA_URL: ${{ inputs.ipa_url }}
+        run: |
+          curl --fail --location --retry 3 --silent --show-error "$IPA_URL" -o youtube.ipa
+          file_type=$(file --mime-type -b youtube.ipa)
+          if [[ "$file_type" != "application/zip" && "$file_type" != "application/x-ios-app" ]]; then
+            echo "::error::The downloaded file is not a valid IPA. Detected: $file_type"
+            exit 1
+          fi
+          unzip -tq youtube.ipa
+
+      - name: Install IPA packaging tool
         run: pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
 
-      - name: Download YouTube Plus
-        id: download_ytp
-        run: |
-          deb_url="https://github.com/dayanch96/YTLite/releases/download/v${{ inputs.tweak_version }}/com.dvntm.ytlite_${{ inputs.tweak_version }}_iphoneos-arm.deb"
-          wget "$deb_url" --no-verbose -O ${{ github.workspace }}/ytplus.deb
-
-      - name: Clone Open in YouTube (Safari extension)
-        run: |
-          git clone --quiet -n --depth=1 --filter=tree:0 https://github.com/CokePokes/YoutubeExtensions/
-          cd YoutubeExtensions
-          git sparse-checkout set --no-cone OpenYoutubeSafariExtension.appex
-          git checkout
-          mv *.appex ${{ github.workspace }}
-
-      - name: Clone YouTubeHeader
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_demc }}
-        run: |
-          if [ -d "$THEOS/include/YouTubeHeader" ]; then
-            echo "YouTubeHeader exists. Pulling latest changes..."
-            cd $THEOS/include/YouTubeHeader
-            git pull
-          else
-            echo "YouTubeHeader does not exist. Cloning repository..."
-            cd $THEOS/include
-            git clone --quiet --depth=1 https://github.com/PoomSmart/YouTubeHeader.git
-          fi
-
-          if [ "${{ inputs.enable_demc }}" = "true" ]; then
-            echo "Copying YouTubeHeader to YTHeaders..."
-            rm -rf "$THEOS/include/YTHeaders"
-            cp -r "$THEOS/include/YouTubeHeader" "$THEOS/include/YTHeaders"
-          fi
+      - name: Inject YouLite+
         env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Clone PSHeader
-        if: ${{ inputs.enable_youpip || inputs.enable_ytuhd || inputs.enable_yq || inputs.enable_ryd || inputs.enable_demc }}
+          APP_NAME: ${{ inputs.app_name }}
+          BUNDLE_ID: ${{ inputs.bundle_id }}
         run: |
-          if [ -d "$THEOS/include/PSHeader" ]; then
-            echo "PSHeader exists. Pulling latest changes..."
-            cd $THEOS/include/PSHeader
-            git pull
-          else
-            echo "PSHeader does not exist. Cloning repository..."
-            cd $THEOS/include
-            git clone --quiet --depth=1 https://github.com/PoomSmart/PSHeader.git
-          fi
-        env:
-          THEOS: ${{ github.workspace }}/theos
+          cyan -i youtube.ipa \
+            -o "YouLitePlus_${GITHUB_RUN_NUMBER}.ipa" \
+            -uwef YouLitePlus.deb \
+            -n "$APP_NAME" \
+            -b "$BUNDLE_ID"
 
-      - name: Clone YouPiP
-        if: ${{ inputs.enable_youpip }}
-        run: |
-          cd ${{ github.workspace }}
-          git clone --quiet --depth=1 https://github.com/PoomSmart/YouPiP.git
-
-      - name: Clone YTUHD
-        if: ${{ inputs.enable_ytuhd }}
-        uses: actions/checkout@v4.1.7
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
         with:
-          repository: PoomSmart/YTUHD
-          ref: 0f59b38817d554ab692a0053456319847a6ab1a1
-          path: ${{ github.workspace }}/YTUHD
+          name: YouLitePlus-IPA
+          path: YouLitePlus_${{ github.run_number }}.ipa
+          if-no-files-found: error
 
-      - name: Clone Return-YouTube-Dislikes
-        if: ${{ inputs.enable_ryd }}
-        run: |
-          cd ${{ github.workspace }}
-          git clone --quiet --depth=1 https://github.com/PoomSmart/Return-YouTube-Dislikes.git
-
-      - name: Clone YouGroupSettings
-        if: ${{ inputs.enable_demc }}
-        run: |
-          cd ${{ github.workspace }}
-          git clone --quiet --depth=1 https://github.com/PoomSmart/YouGroupSettings.git
-
-      - name: Clone YouQuality
-        if: ${{ inputs.enable_yq }}
-        run: |
-          cd ${{ github.workspace }}
-          git clone --quiet --depth=1 https://github.com/PoomSmart/YouQuality.git
-
-      - name: Clone YTVideoOverlay
-        if: ${{ inputs.enable_yq || inputs.enable_youpip }}
-        run: |
-          cd ${{ github.workspace }}
-          git clone --quiet --depth=1 https://github.com/PoomSmart/YTVideoOverlay.git
-
-      - name: Clone DontEatMyContent
-        if: ${{ inputs.enable_demc }}
-        run: |
-          cd ${{ github.workspace }}
-          git clone --quiet --depth=1 --recurse-submodules https://github.com/therealFoxster/DontEatMyContent.git
-
-      - name: Build YouPiP
-        if: ${{ inputs.enable_youpip }}
-        run: |
-          cd ${{ github.workspace }}/YouPiP
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/youpip.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Build YTUHD
-        if: ${{ inputs.enable_ytuhd }}
-        run: |
-          cd ${{ github.workspace }}/YTUHD
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/ytuhd.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Build Return-YouTube-Dislikes
-        if: ${{ inputs.enable_ryd }}
-        run: |
-          cd ${{ github.workspace }}/Return-YouTube-Dislikes
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/ryd.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Build YouGroupSettings
-        if: ${{ inputs.enable_demc }}
-        run: |
-          cd ${{ github.workspace }}/YouGroupSettings
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/ygs.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Build YouQuality
-        if: ${{ inputs.enable_yq }}
-        run: |
-          cd ${{ github.workspace }}/YouQuality
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/yq.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Build YTVideoOverlay
-        if: ${{ inputs.enable_yq || inputs.enable_youpip }}
-        run: |
-          cd ${{ github.workspace }}/YTVideoOverlay
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/ytvo.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Build DontEatMyContent
-        if: ${{ inputs.enable_demc }}
-        run: |
-          cd ${{ github.workspace }}/DontEatMyContent
-          make clean package DEBUG=0 FINALPACKAGE=1
-          mv packages/*.deb ${{ github.workspace }}/demc.deb
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
-      - name: Inject tweaks into IPA
-        run: |
-          tweaks="ytplus.deb OpenYoutubeSafariExtension.appex"
-
-          for f in *.deb; do
-            if [ -f "$f" ]; then
-              tweaks="$tweaks $f"
-            fi
-          done
-
-          cyan -i youtube.ipa -o YouTubePlus_${{ inputs.tweak_version }}.ipa -uwef $tweaks -n "${{ inputs.display_name }}" -b ${{ inputs.bundle_id }}
-
-      - name: Upload to GitHub Releases
-        uses: softprops/action-gh-release@v2.0.1
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ytp-${{ github.run_number }}
-          name: YouTubePlus v${{ inputs.tweak_version }} (${{ github.run_number }})
-          files: YouTubePlus_${{ inputs.tweak_version }}.ipa
+          tag_name: youlite-${{ github.run_number }}
+          name: YouLite+ build ${{ github.run_number }}
           draft: true
-
-      - name: Output Release URL
-        run: |
-          echo "::notice::Release available at: https://github.com/${{ github.repository }}/releases"
+          files: YouLitePlus_${{ github.run_number }}.ipa

@@ -1,5 +1,16 @@
-# YouTube Plus (ex. YTLite)
-A flexible enhancer for YouTube on iOS, featuring over hundred customizable options.
+# YouLite+
+
+A focused YouTube enhancer for iOS.
+
+```text
+Tweak: YouLite+
+Author/Maintainer: hieucocc
+Forked from: dayanch96
+```
+
+YouLite+ is based on the last free YTLite release (`v5.2b4`). It is being
+trimmed around ad blocking, background playback, SponsorBlock and Premium
+branding. YouPiP will be integrated in the next phase.
 
 ## Table of Contents
 - [Screenshots](#screenshots)
@@ -36,17 +47,15 @@ A flexible enhancer for YouTube on iOS, featuring over hundred customizable opti
 </details>
 
 ## Main Features
-<li>Download videos, audio (including audio track selection), thumbnails, posts, and profile pictures</li>
-<li>Copy video, comment, and post information</li>
-<li>Interface customization: Remove feed elements, reorder tabs, enable OLED mode, and as use Shorts-only mode</li>
-<li>Player settings: Gestures, default quality, preferred audio track</li>
-<li>Save, Load and Restore settings. Clear cache once or automatically on app startup</li>
+<li>Ad blocking</li>
+<li>Background playback</li>
 <li>Built-in SponsorBlock</li>
-<li>And much, much more</li>
+<li>YouTube Premium logo option</li>
+<li>Minimal settings surface</li>
 <br>
 
 
-**YouTube Plus preferences can be found in the YouTube Settings**
+**YouLite+ preferences can be found in the YouTube Settings**
 
 **All contributors are listed in the Contributors section**
 **Used open-source libraries are listed in the Open Source Libraries section**
