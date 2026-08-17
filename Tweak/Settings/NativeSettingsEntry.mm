@@ -34,7 +34,8 @@ static NSArray<NSDictionary *> *YTKACENativeLayout(void) {
         @{@"kind": @"toggle", @"title": @"SponsorBlock", @"key": YTKACESponsorBlockKey},
         @{@"kind": @"toggle", @"title": @"Background playback", @"key": YTKACEBackgroundPlaybackKey},
         @{@"kind": @"toggle", @"title": @"Picture in Picture", @"key": YTKACEPiPKey},
-        @{@"kind": @"toggle", @"title": @"Premium logo", @"key": @"YTKACE.Preference.Navigation.PremiumLogo"}
+        @{@"kind": @"toggle", @"title": @"Premium logo", @"key": @"YTKACE.Preference.Navigation.PremiumLogo"},
+        @{@"kind": @"credits"}
     ];
 }
 
@@ -59,10 +60,9 @@ static NSArray *YTKACEOrderedSettingsGroups(id receiver, SEL selector) {
         [groupClass alloc], initializer, YTKACENativeSettingsGroup);
     if (group == nil) return groups;
     NSMutableArray *updated = [groups mutableCopy] ?: [NSMutableArray array];
-    // Keep YouTube's own first group selected when Settings opens. The
-    // YouLite+ group remains near the top, but is only opened by the user.
-    NSUInteger index = MIN((NSUInteger)1, updated.count);
-    [updated insertObject:group atIndex:index];
+    // This is only ordering. Selection is still controlled by YouTube, so
+    // placing YouLite+ first does not present it automatically.
+    [updated insertObject:group atIndex:0];
     return updated;
 }
 
@@ -496,6 +496,12 @@ static void YTKACEUpdateNativeSettingsSection(id receiver, SEL selector,
         id item = nil;
         if ([kind isEqualToString:@"toggle"]) {
             item = YouLiteNativeToggleItem(title, definition[@"key"]);
+        } else if ([kind isEqualToString:@"credits"]) {
+            item = YTKACENativePlainItem(
+                @"YouLite+",
+                @"Author/Maintainer: hieucocc\nBased on: YTKACE by itzzace"
+            );
+            YTKACEMakeItemInert(item);
         } else if ([kind isEqualToString:@"search"]) {
             item = YTKACENativeSearchRow(settingsController);
         } else if ([kind isEqualToString:@"header"]) {

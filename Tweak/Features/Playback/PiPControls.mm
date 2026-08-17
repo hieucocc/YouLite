@@ -1,5 +1,6 @@
 #import "../../YTKACE.h"
 #import "../../Runtime/Localization.h"
+#import "../../Runtime/Hooking.h"
 #import "../../Runtime/Preferences.h"
 #import "../Downloads/DownloadCoordinator.h"
 #import "../Downloads/StreamResolver.h"
@@ -26,6 +27,22 @@
 @property(nonatomic, assign) BOOL polling;
 - (void)togglePiP;
 @end
+
+static IMP OriginalNativeCanEnablePictureInPicture;
+static IMP OriginalNativeMaybeEnablePictureInPicture;
+
+static BOOL YTKACENativeCanEnablePictureInPicture(id receiver, SEL selector) {
+    if (!YTKACEFeatureEnabled(YTKACEPiPKey)) return NO;
+    return OriginalNativeCanEnablePictureInPicture != NULL &&
+        ((BOOL (*)(id, SEL))OriginalNativeCanEnablePictureInPicture)(receiver, selector);
+}
+
+static void YTKACENativeMaybeEnablePictureInPicture(id receiver, SEL selector) {
+    if (YTKACEFeatureEnabled(YTKACEPiPKey) &&
+        OriginalNativeMaybeEnablePictureInPicture != NULL) {
+        ((void (*)(id, SEL))OriginalNativeMaybeEnablePictureInPicture)(receiver, selector);
+    }
+}
 
 @implementation YTKACEPiPCoordinator
 
@@ -389,6 +406,14 @@
 @end
 
 void YTKACEInstallPiPHooks(void) {
+    YTKACEInstallInstanceHook(@"YTPlayerPIPController",
+                              @"canEnablePictureInPicture",
+                              (IMP)YTKACENativeCanEnablePictureInPicture,
+                              &OriginalNativeCanEnablePictureInPicture);
+    YTKACEInstallInstanceHook(@"YTPlayerPIPController",
+                              @"maybeEnablePictureInPicture",
+                              (IMP)YTKACENativeMaybeEnablePictureInPicture,
+                              &OriginalNativeMaybeEnablePictureInPicture);
     YTKACERegisterOverlayConfigurator(@"pip", ^(UIView *overlay, UIStackView *stack) {
         YTKACEPiPCoordinator.sharedCoordinator.overlay = overlay;
         UIButton *button = YTKACEOverlayButton(
